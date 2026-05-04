@@ -7,7 +7,7 @@
     text-align: center;
     font-family: sans-serif;
 }
-.btn, .btnAction, .btnDoor {
+.btn, .btnAction, .btnDoor, .btnCheckIn {
     padding: 10px 15px;
     margin: 5px;
     border: none;
@@ -18,6 +18,8 @@
 .btn { background: #333; }
 .btnAction { background: #007bff; }
 .btnDoor { background: #28a745; }
-.btn:disabled, .btnAction:disabled, .btnDoor:disabled { background: #ccc; cursor: not-allowed; }
+.btnCheckIn { background: #dc3545; }
+.btn:disabled, .btnAction:disabled, .btnDoor:disabled, .btnCheckIn:disabled { background: #ccc; cursor: not-allowed; }
 .qrContainer { margin-top: 20px; }
 .alert { margin-top: 15px; padding: 10px; background: #f8d7da; color: #721c24; border-radius: 5px; }
+.success { background: #d4edda; color: #155724; }

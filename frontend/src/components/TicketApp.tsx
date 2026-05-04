@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
 import { getAddress, getNetwork, isConnected, setAllowed } from '@stellar/freighter-api';
-// Lib içindeki fonksiyonların export edildiğinden emin ol
 import { buyEventTicket, verifyTicket, checkInUser } from '../lib/ticketContract';
 import { config } from '../lib/stellar';
 import styles from './TicketApp.module.css';
@@ -12,9 +11,6 @@ export default function TicketApp() {
     const [myAddress, setMyAddress] = useState('');
     const [hasTicketStatus, setHasTicketStatus] = useState<boolean | null>(null);
 
-    /**
-     * Cüzdan Bağlantısı ve Yetkilendirme
-     */
     const fetchAddress = async () => {
         setLoading(true);
         setMessage('');
@@ -22,12 +18,12 @@ export default function TicketApp() {
         try {
             const connected = await isConnected();
             if (!connected.isConnected) {
-                throw new Error('Freighter eklentisi bulunamadı veya etkin değil.');
+                throw new Error('Freighter extension was not found or is not enabled.');
             }
 
             const allowed = await setAllowed();
             if (allowed.error || !allowed.isAllowed) {
-                throw new Error(allowed.error?.message || 'Cüzdan izni verilmedi.');
+                throw new Error(allowed.error?.message || 'Wallet permission was not granted.');
             }
 
             const network = await getNetwork();
@@ -35,81 +31,71 @@ export default function TicketApp() {
                 throw new Error(network.error.message);
             }
 
-            // Ağ kontrolü (Testnet mi?)
             if (network.networkPassphrase !== config.networkPassphrase) {
-                throw new Error('Lütfen Freighter ağını Testnet olarak değiştirin.');
+                throw new Error('Please switch Freighter to the Stellar Testnet network.');
             }
 
             const res = await getAddress();
             if (res.error || !res.address) {
-                throw new Error(res.error?.message || 'Adres alınamadı.');
+                throw new Error(res.error?.message || 'Wallet address could not be read.');
             }
 
             setMyAddress(res.address);
             setHasTicketStatus(null);
-            setMessage('Cüzdan başarıyla bağlandı.');
+            setMessage('Wallet connected successfully.');
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Bağlantı hatası.';
+            const errorMessage = error instanceof Error ? error.message : 'Connection failed.';
             setMessage(errorMessage);
         } finally {
             setLoading(false);
         }
     };
 
-    /**
-     * Akıllı Sözleşmeden Bilet Satın Alma
-     */
     const handleBuyTicket = async () => {
         setLoading(true);
-        setMessage('Bilet alınıyor, lütfen cüzdanınızdan onay verin...');
+        setMessage('Buying ticket. Please approve the transaction in Freighter...');
 
         try {
             await buyEventTicket();
-            setMessage('✅ Tebrikler! Bilet başarıyla alındı.');
+            setMessage('Success: ticket purchased.');
             setHasTicketStatus(true);
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'İşlem başarısız.';
-            setMessage(`Hata: ${errorMessage}`);
+            const errorMessage = error instanceof Error ? error.message : 'Transaction failed.';
+            setMessage(`Error: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
     };
 
-    /**
-     * Bileti Kapıda Doğrulama (Ücretsiz Okuma)
-     */
     const handleVerifyDoor = async () => {
         if (!myAddress) return;
 
         setLoading(true);
-        setMessage('Ağdan sorgulanıyor...');
+        setMessage('Checking ticket on the network...');
 
         try {
             const status = await verifyTicket(myAddress);
             setHasTicketStatus(status);
-            setMessage(status ? '✅ Geçerli bilet: Giriş onaylandı!' : '❌ Geçersiz bilet: Kayıt bulunamadı.');
+            setMessage(status ? 'Success: valid ticket. Entry approved.' : 'Invalid ticket: no active record was found.');
         } catch (error: unknown) {
-            setMessage('Bilet sorgusu sırasında hata oluştu.');
+            setMessage('Ticket verification failed.');
         } finally {
             setLoading(false);
         }
     };
 
-    /**
-     * Bileti Kullan (Check-in) - Akıllı Sözleşmedeki Durumu Değiştirir
-     */
     const handleCheckIn = async () => {
         if (!myAddress) return;
         setLoading(true);
-        setMessage('Bilet kullanıldı olarak işaretleniyor...');
+        setMessage('Marking ticket as used...');
 
         try {
             await checkInUser(myAddress);
-            setMessage('✅ Check-in başarılı! Bilet artık geçersiz.');
+            setMessage('Success: check-in completed. The ticket is now invalid.');
             setHasTicketStatus(false);
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Check-in başarısız.';
-            setMessage(`Hata: ${errorMessage}`);
+            const errorMessage = error instanceof Error ? error.message : 'Check-in failed.';
+            setMessage(`Error: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
@@ -118,47 +104,47 @@ export default function TicketApp() {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h2>🎟️ Merkeziyetsiz Etkinlik Bileti</h2>
+                <h2>Decentralized Event Ticket</h2>
             </header>
 
             {!myAddress ? (
                 <button onClick={fetchAddress} disabled={loading} className={styles.btn}>
-                    {loading ? 'Bağlanıyor...' : 'Cüzdanı Bağla'}
+                    {loading ? 'Connecting...' : 'Connect Wallet'}
                 </button>
             ) : (
                 <div className={styles.ticketSection}>
                     <div className={styles.addressBox}>
-                        <strong>Adres:</strong> {myAddress.slice(0, 6)}...{myAddress.slice(-6)}
+                        <strong>Address:</strong> {myAddress.slice(0, 6)}...{myAddress.slice(-6)}
                     </div>
 
                     <div className={styles.actions}>
                         <button onClick={handleBuyTicket} disabled={loading} className={styles.btnAction}>
-                            Bilet Al
+                            Buy Ticket
                         </button>
 
                         <button onClick={handleVerifyDoor} disabled={loading} className={styles.btnDoor}>
-                            Doğrula
+                            Verify
                         </button>
 
                         <button onClick={handleCheckIn} disabled={loading} className={styles.btnCheckIn}>
-                            Bileti Kullan
+                            Use Ticket
                         </button>
                     </div>
 
                     {hasTicketStatus && (
                         <div className={styles.qrContainer}>
-                            <h3>Giriş QR Kodunuz</h3>
+                            <h3>Your Entry QR Code</h3>
                             <div className={styles.qrCode}>
-                                <QRCode value={myAddress} size={160} bgColor='#ffffff' />
+                                <QRCode value={myAddress} size={160} bgColor="#ffffff" />
                             </div>
-                            <p className={styles.hint}>Bu kodu kapıdaki görevliye gösterin.</p>
+                            <p className={styles.hint}>Show this code at the entrance.</p>
                         </div>
                     )}
                 </div>
             )}
 
             {message && (
-                <div className={`${styles.alert} ${message.includes('✅') ? styles.success : ''}`}>
+                <div className={`${styles.alert} ${message.startsWith('Success:') ? styles.success : ''}`}>
                     {message}
                 </div>
             )}
