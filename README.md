@@ -4,6 +4,15 @@ A full-stack Stellar Testnet project that connects to the Freighter wallet and i
 
 The main application lets a user connect a wallet, buy a ticket on-chain, verify whether a wallet owns a valid ticket, display a QR code for entry, and mark a ticket as used through the check-in flow.
 
+
+## Preview
+
+![App Screenshot](./screenshot.png)
+
+
+*The user interface showing a verified ticket and its unique entry QR code.*
+
+
 ## Features
 
 - Freighter wallet connection
@@ -221,9 +230,21 @@ The latest local verification completed successfully:
 
 The frontend build currently shows a Vite bundle-size warning because the Stellar SDK is large. This does not block the production build.
 
+
+## n-Chain Verification
+
+The application is live on the Stellar Testnet. You can verify the smart contract and transactions below:
+
+- **Smart Contract:** [CAKDMHCMUU3GYDZV2NUFXGP6RP3WRHHPXASW2UQY4YJIPCZYYQDYHE47](https://stellar.expert/explorer/testnet/contract/CAKDMHCMUU3GYDZV2NUFXGP6RP3WRHHPXASW2UQY4YJIPCZYYQDYHE47)
+- **Sample Transaction (buy_ticket):** [View on Stellar.expert](https://stellar.expert/explorer/testnet/contract/CAKDMHCMUU3GYDZV2NUFXGP6RP3WRHHPXASW2UQY4YJIPCZYYQDYHE47)
+
+
+
 ## Notes
 
 - This project is configured for Stellar Testnet.
 - Never commit real secret keys or private wallet data.
 - `.env`, `node_modules`, `dist`, and Rust `target` folders are ignored by Git.
 - Testnet XLM has no real financial value and should only be used for development and demos.
+
+
